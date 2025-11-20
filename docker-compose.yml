@@ -1,0 +1,233 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: open5gs-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - open5gs-network
+
+  open5gs-nrf:
+    image: open5gs/nrf:v2.4.11
+    container_name: open5gs-nrf
+    ports:
+      - "7777:7777"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+    networks:
+      - open5gs-network
+
+  open5gs-amf:
+    image: open5gs/amf:v2.4.11
+    container_name: open5gs-amf
+    ports:
+      - "38412:38412/sctp"
+      - "2152:2152/udp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/amf.yaml:/opt/open5gs/etc/open5gs/amf.yaml
+
+  open5gs-smf:
+    image: open5gs/smf:v2.4.11
+    container_name: open5gs-smf
+    ports:
+      - "2152:2152/udp"
+      - "8805:8805/udp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/smf.yaml:/opt/open5gs/etc/open5gs/smf.yaml
+
+  open5gs-upf:
+    image: open5gs/upf:v2.4.11
+    container_name: open5gs-upf
+    ports:
+      - "2152:2152/udp"
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/upf.yaml:/opt/open5gs/etc/open5gs/upf.yaml
+
+  open5gs-sgwu:
+    image: open5gs/sgwu:v2.4.11
+    container_name: open5gs-sgwu
+    ports:
+      - "2152:2152/udp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/sgwu.yaml:/opt/open5gs/etc/open5gs/sgwu.yaml
+
+  open5gs-hss:
+    image: open5gs/hss:v2.4.11
+    container_name: open5gs-hss
+    ports:
+      - "3868:3868/sctp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-pcrf:
+    image: open5gs/pcrf:v2.4.11
+    container_name: open5gs-pcrf
+    ports:
+      - "3868:3868/sctp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-mme:
+    image: open5gs/mme:v2.4.11
+    container_name: open5gs-mme
+    ports:
+      - "2152:2152/udp"
+      - "3868:3868/sctp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/mme.yaml:/opt/open5gs/etc/open5gs/mme.yaml
+
+  open5gs-sgwc:
+    image: open5gs/sgwc:v2.4.11
+    container_name: open5gs-sgwc
+    ports:
+      - "2152:2152/udp"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+    volumes:
+      - ./config/sgwc.yaml:/opt/open5gs/etc/open5gs/sgwc.yaml
+
+  open5gs-ausf:
+    image: open5gs/ausf:v2.4.11
+    container_name: open5gs-ausf
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-udm:
+    image: open5gs/udm:v2.4.11
+    container_name: open5gs-udm
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-udr:
+    image: open5gs/udr:v2.4.11
+    container_name: open5gs-udr
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-pcf:
+    image: open5gs/pcf:v2.4.11
+    container_name: open5gs-pcf
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-nssf:
+    image: open5gs/nssf:v2.4.11
+    container_name: open5gs-nssf
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-bsf:
+    image: open5gs/bsf:v2.4.11
+    container_name: open5gs-bsf
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+  open5gs-ngepc:
+    image: open5gs/ngepc:v2.4.11
+    container_name: open5gs-ngepc
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_URI=mongodb://mongodb/open5gs
+    depends_on:
+      - mongodb
+      - open5gs-nrf
+    networks:
+      - open5gs-network
+
+networks:
+  open5gs-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
